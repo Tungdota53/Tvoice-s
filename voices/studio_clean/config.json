@@ -1,0 +1,11 @@
+{
+  "name": "Studio Clean",
+  "description": "Giọng sạch, cân bằng cho họp và stream",
+  "gender": "custom",
+  "pitch_shift": 0.0,
+  "warmth": 0.1,
+  "presence": 0.2,
+  "compression": 0.35,
+  "output_gain_db": 0.0,
+  "hotkey": "F3"
+}

@@ -1,0 +1,11 @@
+{
+  "name": "Bright Streamer",
+  "description": "Giọng sáng, rõ phụ âm cho livestream",
+  "gender": "custom",
+  "pitch_shift": 0.0,
+  "warmth": -0.1,
+  "presence": 0.75,
+  "compression": 0.5,
+  "output_gain_db": 0.5,
+  "hotkey": "F5"
+}

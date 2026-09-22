@@ -1,0 +1,11 @@
+{
+  "name": "Morgan (Deep Narrator)",
+  "description": "Deep resonance cinematic narrator voice",
+  "gender": "male",
+  "pitch_shift": -10.0,
+  "warmth": 0.85,
+  "presence": 0.15,
+  "compression": 0.6,
+  "output_gain_db": 0.5,
+  "hotkey": "F2"
+}

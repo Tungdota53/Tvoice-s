@@ -1,0 +1,16 @@
+.venv/
+__pycache__/
+*.py[cod]
+*.log
+.pytest_cache/
+.mypy_cache/
+.vscode/
+dist/
+build/
+*.spec
+
+# Large voice model artifacts must be distributed separately or with Git LFS.
+voices/**/*.onnx
+voices/**/*.pth
+voices/**/*.pt
+voices/**/*.faiss

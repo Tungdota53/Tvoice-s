@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Real-Time Voice Changer</title>
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card-bg: rgba(22, 29, 49, 0.7);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --accent: #06b6d4;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --success: #10b981;
+      --danger: #ef4444;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      user-select: none;
+    }
+
+    body {
+      background: radial-gradient(circle at 15% 15%, #18223d 0%, var(--bg) 65%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      padding: 16px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--card-border);
+      background: rgba(11, 15, 25, 0.85);
+      backdrop-filter: blur(12px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 20px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #a5b4fc, #38bdf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .status-bar {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .stat-badge {
+      font-size: 13px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--card-border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .vad-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #64748b;
+      transition: all 0.2s ease;
+    }
+    .vad-dot.active {
+      background: var(--success);
+      box-shadow: 0 0 10px var(--success);
+    }
+
+    .btn-toggle-engine {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border: none;
+      color: white;
+      padding: 10px 22px;
+      border-radius: 24px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+      transition: all 0.2s;
+    }
+    .btn-toggle-engine.active {
+      background: linear-gradient(135deg, #ef4444, #f97316);
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+    }
+
+    .main-container {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 24px;
+      padding: 24px 28px;
+    }
+
+    /* Voice Grid */
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 16px;
+    }
+
+    .voices-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 18px;
+    }
+
+    .voice-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+    }
+    .voice-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(99, 102, 241, 0.5);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+    }
+    .voice-card.active {
+      border-color: var(--accent);
+      box-shadow: 0 0 20px rgba(6, 182, 212, 0.35);
+      background: rgba(30, 41, 67, 0.85);
+    }
+
+    .voice-avatar {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #3730a3, #0284c7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      margin-bottom: 14px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    .voice-name {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .voice-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.4;
+      margin-bottom: 12px;
+    }
+    .voice-tag {
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.08);
+      color: #38bdf8;
+    }
+
+    /* Right Control Sidebar */
+    .controls-panel {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      backdrop-filter: blur(10px);
+    }
+
+    .visualizer-box {
+      width: 100%;
+      height: 90px;
+      background: #060913;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--card-border);
+    }
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .control-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .control-val {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      outline: none;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--primary);
+      cursor: pointer;
+      box-shadow: 0 0 10px var(--primary);
+      transition: transform 0.1s;
+    }
+    input[type=range]::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+    }
+
+    select {
+      width: 100%;
+      padding: 8px 12px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--card-border);
+      color: var(--text);
+      border-radius: 8px;
+      outline: none;
+      font-size: 13px;
+    }
+
+    footer {
+      padding: 12px 28px;
+      border-top: 1px solid var(--card-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: var(--text-muted);
+      background: rgba(11, 15, 25, 0.85);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+      AURA VOICE AI
+    </div>
+    <div class="status-bar">
+      <div class="stat-badge">
+        <div id="vadIndicator" class="vad-dot"></div>
+        <span>VAD Mic</span>
+      </div>
+      <div class="stat-badge">
+        <span>Độ trễ:</span>
+        <b id="latencyVal" style="color:#38bdf8;">-- ms</b>
+      </div>
+      <button id="btnToggleEngine" class="btn-toggle-engine" onclick="toggleEngine()">BẬT ĐỔI GIỌNG</button>
+    </div>
+  </header>
+
+  <div class="main-container">
+    <div>
+      <div class="section-title">Danh sách giọng AI (Hot-swap)</div>
+      <div id="voicesGrid" class="voices-grid">
+        <!-- Cards generated by JS -->
+      </div>
+    </div>
+
+    <div class="controls-panel">
+      <div class="section-title">Bảng điều khiển Realtime</div>
+
+      <div class="visualizer-box">
+        <canvas id="visualizerCanvas"></canvas>
+      </div>
+
+      <div class="control-group">
+        <div class="control-label">
+          <span>Pitch Shift (Semitones)</span>
+          <span id="pitchVal" class="control-val">0.0</span>
+        </div>
+        <input type="range" id="pitchSlider" min="-12" max="12" step="0.5" value="0" oninput="updatePitch(this.value)">
+      </div>
+
+      <div class="control-group">
+        <div class="control-label">
+          <span>Noise Gate (dBFS)</span>
+          <span id="denoiseVal" class="control-val">-45 dB</span>
+        </div>
+        <input type="range" id="denoiseSlider" min="-80" max="-10" step="1" value="-45" oninput="updateDenoise(this.value)">
+      </div>
+
+      <div class="control-group">
+        <div class="control-label">
+          <span>Monitor Volume (Tai nghe)</span>
+          <span id="monVolVal" class="control-val">100%</span>
+        </div>
+        <input type="range" id="monVolSlider" min="0" max="2" step="0.05" value="1" oninput="updateVolume('monitor', this.value)">
+      </div>
+
+      <hr style="border: 0; border-top: 1px solid var(--card-border); margin: 6px 0;">
+
+      <div class="control-group">
+        <label class="control-label">Microphone Input</label>
+        <select id="inputDeviceSelect" onchange="applyDevices()"></select>
+      </div>
+
+      <div class="control-group">
+        <label class="control-label">Virtual Output (Discord/VB-Cable)</label>
+        <select id="outputDeviceSelect" onchange="applyDevices()"></select>
+      </div>
+
+      <div class="control-group">
+        <label class="control-label">Monitor Device (Nghe kiểm âm)</label>
+        <select id="monitorDeviceSelect" onchange="applyDevices()"></select>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <span>Trạng thái: Sẵn sàng | Engine: Python ONNX Low-Latency</span>
+    <span>Aura Real-time Voice Changer v1.0</span>
+  </footer>
+
+  <script>
+    let activeVoiceId = null;
+    let isRunning = false;
+
+    async function loadVoices() {
+      try {
+        const res = await fetch('/api/voices');
+        const voices = await res.json();
+        const grid = document.getElementById('voicesGrid');
+        grid.innerHTML = '';
+
+        voices.forEach(v => {
+          const card = document.createElement('div');
+          card.className = `voice-card ${v.id === activeVoiceId ? 'active' : ''}`;
+          card.onclick = () => switchVoice(v.id);
+
+          const emoji = v.gender === 'female' ? '🌸' : v.gender === 'male' ? '🎙️' : '🤖';
+          card.innerHTML = `
+            <div class="voice-avatar">${emoji}</div>
+            <div class="voice-name">${v.name}</div>
+            <div class="voice-desc">${v.description}</div>
+            <div class="voice-tag">${v.hotkey ? 'Key: ' + v.hotkey : 'Pitch: ' + v.pitch_shift + 'st'}</div>
+          `;
+          grid.appendChild(card);
+        });
+      } catch (e) {
+        console.error("Failed to load voices", e);
+      }
+    }
+
+    async function switchVoice(voiceId) {
+      activeVoiceId = voiceId;
+      await fetch('/api/switch_voice', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({voice_id: voiceId})
+      });
+      loadVoices();
+    }
+
+    async function toggleEngine() {
+      const res = await fetch('/api/toggle_engine', {method: 'POST'});
+      const data = await res.json();
+      isRunning = data.running;
+      updateEngineButton();
+    }
+
+    function updateEngineButton() {
+      const btn = document.getElementById('btnToggleEngine');
+      if (isRunning) {
+        btn.innerText = "TẮT ĐỔI GIỌNG";
+        btn.classList.add('active');
+      } else {
+        btn.innerText = "BẬT ĐỔI GIỌNG";
+        btn.classList.remove('active');
+      }
+    }
+
+    async function updatePitch(val) {
+      document.getElementById('pitchVal').innerText = (val > 0 ? '+' : '') + val;
+      await fetch('/api/set_pitch', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({pitch: parseFloat(val)})
+      });
+    }
+
+    async function updateDenoise(val) {
+      document.getElementById('denoiseVal').innerText = val + " dB";
+      await fetch('/api/set_denoise', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({threshold_db: parseFloat(val)})
+      });
+    }
+
+    async function updateVolume(type, val) {
+      document.getElementById('monVolVal').innerText = Math.round(val * 100) + "%";
+      await fetch('/api/set_volume', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({type: type, gain: parseFloat(val)})
+      });
+    }
+
+    async function loadDevices() {
+      try {
+        const res = await fetch('/api/devices');
+        const data = await res.json();
+        const inSelect = document.getElementById('inputDeviceSelect');
+        const outSelect = document.getElementById('outputDeviceSelect');
+        const monSelect = document.getElementById('monitorDeviceSelect');
+
+        inSelect.innerHTML = '<option value="">(Mặc định hệ thống)</option>';
+        outSelect.innerHTML = '<option value="">(Mặc định hệ thống)</option>';
+        monSelect.innerHTML = '<option value="">(Không dùng)</option>';
+
+        data.input.forEach(d => {
+          inSelect.innerHTML += `<option value="${d.id}">${d.name} [${d.host_api}]</option>`;
+        });
+        data.output.forEach(d => {
+          outSelect.innerHTML += `<option value="${d.id}">${d.name} [${d.host_api}]</option>`;
+          monSelect.innerHTML += `<option value="${d.id}">${d.name} [${d.host_api}]</option>`;
+        });
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function applyDevices() {
+      const inId = document.getElementById('inputDeviceSelect').value;
+      const outId = document.getElementById('outputDeviceSelect').value;
+      const monId = document.getElementById('monitorDeviceSelect').value;
+
+      await fetch('/api/set_devices', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          input_device: inId ? parseInt(inId) : null,
+          output_device: outId ? parseInt(outId) : null,
+          monitor_device: monId ? parseInt(monId) : null
+        })
+      });
+    }
+
+    // Polling telemetry
+    async function pollStatus() {
+      try {
+        const res = await fetch('/api/status');
+        const status = await res.json();
+
+        isRunning = status.running;
+        updateEngineButton();
+
+        document.getElementById('latencyVal').innerText = status.latency_ms + " ms";
+        const vadDot = document.getElementById('vadIndicator');
+        if (status.is_speaking) {
+          vadDot.classList.add('active');
+        } else {
+          vadDot.classList.remove('active');
+        }
+
+        if (status.active_voice_id && status.active_voice_id !== activeVoiceId) {
+          activeVoiceId = status.active_voice_id;
+          loadVoices();
+        }
+      } catch (e) {}
+    }
+
+    // Audio Visualizer Canvas
+    const canvas = document.getElementById('visualizerCanvas');
+    const ctx = canvas.getContext('2d');
+    function resizeCanvas() {
+      canvas.width = canvas.clientWidth * window.devicePixelRatio;
+      canvas.height = canvas.clientHeight * window.devicePixelRatio;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    let wavePhase = 0;
+    function drawVisualizer() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const isSpeaking = document.getElementById('vadIndicator').classList.contains('active');
+      const amplitude = isSpeaking ? canvas.height * 0.35 : 3;
+
+      ctx.beginPath();
+      ctx.lineWidth = 2 * window.devicePixelRatio;
+      ctx.strokeStyle = isSpeaking ? '#38bdf8' : '#334155';
+
+      for (let x = 0; x < canvas.width; x++) {
+        const y = canvas.height / 2 + Math.sin(x * 0.03 + wavePhase) * amplitude * Math.sin(x / canvas.width * Math.PI);
+        if (x === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      wavePhase += isSpeaking ? 0.2 : 0.03;
+      requestAnimationFrame(drawVisualizer);
+    }
+    drawVisualizer();
+
+    // Init
+    loadDevices();
+    loadVoices();
+    setInterval(pollStatus, 400);
+  </script>
+</body>
+</html>

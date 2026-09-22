@@ -1,0 +1,11 @@
+{
+  "name": "Warm Radio",
+  "description": "Giọng ấm, dày, phù hợp podcast và radio",
+  "gender": "custom",
+  "pitch_shift": 0.0,
+  "warmth": 0.8,
+  "presence": -0.1,
+  "compression": 0.65,
+  "output_gain_db": 1.0,
+  "hotkey": "F4"
+}

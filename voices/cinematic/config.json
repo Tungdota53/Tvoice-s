@@ -1,0 +1,11 @@
+{
+  "name": "Cinematic",
+  "description": "Giọng dày, có lực cho kể chuyện",
+  "gender": "custom",
+  "pitch_shift": 0.0,
+  "warmth": 0.7,
+  "presence": 0.3,
+  "compression": 0.55,
+  "output_gain_db": 1.5,
+  "hotkey": "F8"
+}

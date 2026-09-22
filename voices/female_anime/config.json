@@ -1,0 +1,11 @@
+{
+  "name": "Sakura (Anime Female)",
+  "description": "High pitched, youthful and vibrant voice profile",
+  "gender": "female",
+  "pitch_shift": 12.0,
+  "warmth": -0.25,
+  "presence": 0.7,
+  "compression": 0.45,
+  "output_gain_db": -1.0,
+  "hotkey": "F1"
+}

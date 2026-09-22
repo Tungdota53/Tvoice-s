@@ -1,0 +1,11 @@
+{
+  "name": "Soft Voice",
+  "description": "Giọng mềm, ít chói, nghe lâu không mệt",
+  "gender": "custom",
+  "pitch_shift": 0.0,
+  "warmth": 0.35,
+  "presence": -0.45,
+  "compression": 0.25,
+  "output_gain_db": -1.0,
+  "hotkey": "F6"
+}

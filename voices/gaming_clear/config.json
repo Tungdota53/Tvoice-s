@@ -1,0 +1,11 @@
+{
+  "name": "Gaming Clear",
+  "description": "Giọng rõ và ổn định cho game voice chat",
+  "gender": "custom",
+  "pitch_shift": 0.0,
+  "warmth": 0.0,
+  "presence": 0.5,
+  "compression": 0.7,
+  "output_gain_db": 0.0,
+  "hotkey": "F7"
+}

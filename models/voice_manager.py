@@ -23,6 +23,10 @@ class VoiceProfile:
     model_path: Optional[str] = None
     index_path: Optional[str] = None
     avatar_path: Optional[str] = None
+    category: str = "ai_voice"
+    backend: str = "rvc_onnx"
+    model_ready: bool = False
+    missing_files: tuple[str, ...] = ()
 
 
 class VoiceManager:
@@ -62,6 +66,8 @@ class VoiceManager:
                 compression = 0.35
                 output_gain_db = 0.0
                 hotkey = None
+                category = "ai_voice"
+                backend = "rvc_onnx"
 
                 if config_file.exists():
                     try:
@@ -76,8 +82,15 @@ class VoiceManager:
                             compression = float(data.get("compression", 0.35))
                             output_gain_db = float(data.get("output_gain_db", 0.0))
                             hotkey = data.get("hotkey", None)
+                            category = data.get("category", "ai_voice")
+                            backend = data.get("backend", "rvc_onnx")
                     except Exception as e:
                         logger.error("Failed to parse %s: %s", config_file, e)
+
+                required_files = ["model.onnx"]
+                if backend == "rvc_onnx":
+                    required_files.extend(["hubert.onnx", "rmvpe.onnx"])
+                missing_files = tuple(name for name in required_files if not (folder / name).exists())
 
                 profile = VoiceProfile(
                     id=voice_id,
@@ -93,6 +106,10 @@ class VoiceManager:
                     model_path=str(model_file) if model_file.exists() else None,
                     index_path=str(index_file) if index_file.exists() else None,
                     avatar_path=str(avatar_file) if avatar_file.exists() else None,
+                    category=category,
+                    backend=backend,
+                    model_ready=not missing_files,
+                    missing_files=missing_files,
                 )
                 self.profiles[voice_id] = profile
 

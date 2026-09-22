@@ -1,0 +1,13 @@
+{
+  "name": "Atlas (Natural Male)",
+  "description": "Giọng nam AI tự nhiên; cần checkpoint RVC ONNX có giấy phép",
+  "gender": "male",
+  "category": "ai_voice",
+  "backend": "rvc_onnx",
+  "pitch_shift": -4.0,
+  "warmth": 0.0,
+  "presence": 0.0,
+  "compression": 0.15,
+  "output_gain_db": 0.0,
+  "hotkey": "F4"
+}

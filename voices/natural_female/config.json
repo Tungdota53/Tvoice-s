@@ -1,0 +1,13 @@
+{
+  "name": "Luna (Natural Female)",
+  "description": "Giọng nữ AI tự nhiên; cần checkpoint RVC ONNX có giấy phép",
+  "gender": "female",
+  "category": "ai_voice",
+  "backend": "rvc_onnx",
+  "pitch_shift": 4.0,
+  "warmth": 0.0,
+  "presence": 0.0,
+  "compression": 0.15,
+  "output_gain_db": 0.0,
+  "hotkey": "F3"
+}

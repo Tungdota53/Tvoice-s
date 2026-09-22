@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 class InferenceEngine:
-    """Manages AI inference via ONNX Runtime with DSP fallback."""
+    """Loads only declared AI backends; never presents DSP as voice conversion."""
 
     def __init__(self, sample_rate: int = 44100):
         self.sample_rate = sample_rate
@@ -24,6 +24,8 @@ class InferenceEngine:
         self.current_model_path: Optional[str] = None
         self.providers = self._detect_providers()
         self.last_latency_ms: float = 0.0
+        self.backend_status: str = "model_missing"
+        self.last_error: Optional[str] = None
 
     def _detect_providers(self) -> list[str]:
         """Detect fastest available ONNX Execution Providers."""
@@ -39,7 +41,7 @@ class InferenceEngine:
         logger.info("ONNX Execution Providers: %s", chosen)
         return chosen
 
-    def load_model(self, model_path: Optional[str]) -> bool:
+    def load_model(self, model_path: Optional[str], profile: Optional[VoiceProfile] = None) -> bool:
         """Load or switch ONNX model session."""
         if model_path == self.current_model_path:
             return True
@@ -47,6 +49,17 @@ class InferenceEngine:
         if not model_path or ort is None:
             self.session = None
             self.current_model_path = None
+            self.backend_status = "runtime_missing" if model_path and ort is None else "model_missing"
+            return False
+
+        if profile and profile.backend == "rvc_onnx":
+            # RVC needs HuBERT content features, RMVPE F0 and model-specific
+            # tensors. A waveform-only ONNX call is invalid and must not run.
+            self.session = None
+            self.current_model_path = None
+            self.backend_status = "backend_not_installed"
+            self.last_error = "RVC ONNX runtime pipeline is not installed"
+            logger.error(self.last_error)
             return False
 
         try:
@@ -54,12 +67,16 @@ class InferenceEngine:
             opts.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
             self.session = ort.InferenceSession(model_path, sess_options=opts, providers=self.providers)
             self.current_model_path = model_path
+            self.backend_status = "ready"
+            self.last_error = None
             logger.info("Loaded ONNX model: %s", model_path)
             return True
         except Exception as e:
             logger.error("Failed to load ONNX model %s: %s", model_path, e)
             self.session = None
             self.current_model_path = None
+            self.backend_status = "load_error"
+            self.last_error = str(e)
             return False
 
     def process_chunk(self, chunk: np.ndarray, profile: Optional[VoiceProfile]) -> np.ndarray:
@@ -80,13 +97,8 @@ class InferenceEngine:
             except Exception as e:
                 logger.error("ONNX inference failed: %s", e)
 
-        output = self.quality.process(
-            processed,
-            warmth=profile.warmth if profile else 0.0,
-            presence=profile.presence if profile else 0.0,
-            compression=profile.compression if profile else 0.35,
-            output_gain_db=profile.output_gain_db if profile else 0.0,
-        )
+        # Clean limiter remains output protection, not fake identity conversion.
+        output = self.quality.process(processed, compression=0.15)
 
         t_end = time.perf_counter()
         self.last_latency_ms = (t_end - t_start) * 1000.0

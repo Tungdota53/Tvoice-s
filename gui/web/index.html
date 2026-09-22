@@ -364,6 +364,7 @@
         voices.forEach(v => {
           const card = document.createElement('div');
           card.className = `voice-card ${v.id === activeVoiceId ? 'active' : ''}`;
+          card.style.opacity = v.model_ready ? '1' : '0.55';
           card.onclick = () => switchVoice(v.id);
 
           const emoji = v.gender === 'female' ? '🌸' : v.gender === 'male' ? '🎙️' : '🤖';
@@ -371,7 +372,7 @@
             <div class="voice-avatar">${emoji}</div>
             <div class="voice-name">${v.name}</div>
             <div class="voice-desc">${v.description}</div>
-            <div class="voice-tag">${v.hotkey ? 'Key: ' + v.hotkey : 'Pitch: ' + v.pitch_shift + 'st'}</div>
+            <div class="voice-tag">${v.model_ready ? 'AI sẵn sàng · ' + v.backend : 'Thiếu: ' + v.missing_files.join(', ')}</div>
           `;
           grid.appendChild(card);
         });

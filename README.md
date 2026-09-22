@@ -10,11 +10,15 @@ noise gate, tone shaping, compressor và soft limiter chống vỡ tiếng.
 3. Chạy `run.bat` hoặc `.venv\Scripts\python.exe main.py`.
 4. Chọn microphone, VB-CABLE output và tai nghe monitor trong giao diện.
 
-## Preset
+## Giọng AI thật
 
-Dự án kèm 8 preset tone. Preset chỉ đổi EQ/compression/màu âm. Muốn chuyển sang
-nhân vật hoặc người nói khác với chất lượng cao, đặt model ONNX tương thích và có
-quyền sử dụng vào `voices/<voice-id>/model.onnx`.
+Mỗi giọng RVC ONNX cần ba artifact tương thích trong `voices/<voice-id>/`:
+`model.onnx`, `hubert.onnx`, `rmvpe.onnx`. Giao diện đánh dấu rõ model thiếu và
+không gọi EQ/pitch là giọng AI. Pipeline RVC nhiều đầu vào chưa được cài sẽ báo
+`backend_not_installed`, thay vì chạy model như waveform ONNX một đầu vào sai chuẩn.
+
+Các thư mục preset cũ chỉ còn metadata/tham khảo; không tạo danh tính giọng mới.
+Checkpoint phải được huấn luyện từ dữ liệu có đồng ý hoặc có giấy phép rõ ràng.
 
 Không dùng giọng người thật khi chưa có sự đồng ý. Không mạo danh hoặc lừa đảo.
 

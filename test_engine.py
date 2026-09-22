@@ -77,7 +77,12 @@ def test_pipeline_status():
     status = pipeline.get_status()
     assert "latency_ms" in status
     assert "active_voice_id" in status
-    assert len(pipeline.voice_manager.profiles) >= 8
+    assert "backend_status" in status
+    assert len(pipeline.voice_manager.profiles) >= 10
+    ai_profiles = [p for p in pipeline.voice_manager.profiles.values() if p.category == "ai_voice"]
+    assert ai_profiles
+    assert all(not p.model_ready for p in ai_profiles)
+    assert all("model.onnx" in p.missing_files for p in ai_profiles)
     print(f"[PASS] Pipeline initialized with {len(pipeline.voice_manager.profiles)} voices")
 
 

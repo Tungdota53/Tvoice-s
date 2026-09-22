@@ -45,7 +45,7 @@ class VoiceChangerPipeline:
         """Pre-load first available voice profile model."""
         active = self.voice_manager.get_active_profile()
         if active and active.model_path:
-            self.inference_engine.load_model(active.model_path)
+            self.inference_engine.load_model(active.model_path, active)
 
     def _process_audio(self, indata: np.ndarray) -> np.ndarray:
         """Pipeline callback invoked per audio chunk."""
@@ -83,7 +83,7 @@ class VoiceChangerPipeline:
         if success:
             profile = self.voice_manager.get_active_profile()
             if profile and profile.model_path:
-                self.inference_engine.load_model(profile.model_path)
+                self.inference_engine.load_model(profile.model_path, profile)
             else:
                 self.inference_engine.load_model(None)
         return success
@@ -113,6 +113,10 @@ class VoiceChangerPipeline:
             "latency_ms": round(self.inference_engine.last_latency_ms, 2),
             "active_voice_id": active.id if active else None,
             "active_voice_name": active.name if active else None,
+            "model_ready": active.model_ready if active else False,
+            "backend": active.backend if active else None,
+            "backend_status": self.inference_engine.backend_status,
+            "backend_error": self.inference_engine.last_error,
             "pitch_offset": self.custom_pitch_offset,
             "noise_threshold_db": self.noise_gate.threshold_db,
             "input_gain": self.audio_io.input_gain,

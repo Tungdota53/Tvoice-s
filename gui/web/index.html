@@ -3,203 +3,509 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Real-Time Voice Changer</title>
+  <title>AURA AI Voice Changer Studio</title>
   <style>
     :root {
-      --bg: #0b0f19;
-      --card-bg: rgba(22, 29, 49, 0.7);
-      --card-border: rgba(255, 255, 255, 0.08);
+      --bg-darkest: #07090e;
+      --bg-main: #0c101a;
+      --bg-card: rgba(18, 24, 38, 0.75);
+      --bg-card-hover: rgba(28, 37, 58, 0.85);
+      --bg-glass: rgba(14, 20, 32, 0.82);
+      --border-subtle: rgba(255, 255, 255, 0.07);
+      --border-focus: rgba(99, 102, 241, 0.5);
       --primary: #6366f1;
-      --primary-hover: #4f46e5;
-      --accent: #06b6d4;
-      --text: #f1f5f9;
-      --text-muted: #94a3b8;
+      --primary-glow: rgba(99, 102, 241, 0.35);
+      --accent-cyan: #06b6d4;
+      --accent-pink: #ec4899;
+      --accent-violet: #8b5cf6;
+      --accent-amber: #f59e0b;
       --success: #10b981;
       --danger: #ef4444;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       user-select: none;
     }
 
     body {
-      background: radial-gradient(circle at 15% 15%, #18223d 0%, var(--bg) 65%);
-      color: var(--text);
+      background: radial-gradient(circle at 10% 0%, #151b30 0%, #07090e 65%);
+      color: var(--text-main);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+      overflow: hidden;
     }
 
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.22);
+    }
+
+    /* Header Bar */
     header {
-      padding: 16px 28px;
+      height: 64px;
+      padding: 0 24px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-bottom: 1px solid var(--card-border);
-      background: rgba(11, 15, 25, 0.85);
-      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-subtle);
+      background: var(--bg-glass);
+      backdrop-filter: blur(20px);
+      z-index: 50;
+      flex-shrink: 0;
     }
 
-    .brand {
+    .brand-cluster {
       display: flex;
       align-items: center;
-      gap: 12px;
-      font-size: 20px;
-      font-weight: 700;
-      background: linear-gradient(135deg, #a5b4fc, #38bdf8);
+      gap: 14px;
+    }
+
+    .logo-badge {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #4f46e5, #06b6d4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 16px var(--primary-glow);
+    }
+
+    .brand-title {
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      background: linear-gradient(135deg, #ffffff 40%, #a5b4fc 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-    }
-
-    .status-bar {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-    }
-
-    .stat-badge {
-      font-size: 13px;
-      padding: 6px 14px;
-      border-radius: 20px;
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid var(--card-border);
       display: flex;
       align-items: center;
       gap: 8px;
     }
 
-    .vad-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: #64748b;
-      transition: all 0.2s ease;
+    .version-pill {
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 6px;
+      background: rgba(99, 102, 241, 0.18);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      color: #c7d2fe;
+      -webkit-text-fill-color: #c7d2fe;
+      font-weight: 600;
     }
-    .vad-dot.active {
+
+    .header-telemetry {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .hud-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.035);
+      border: 1px solid var(--border-subtle);
+      font-size: 12px;
+      color: var(--text-muted);
+      transition: var(--transition);
+    }
+    .hud-pill strong {
+      color: var(--text-main);
+      font-weight: 600;
+    }
+
+    .vad-light {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #475569;
+      transition: var(--transition);
+    }
+    .vad-light.speaking {
       background: var(--success);
       box-shadow: 0 0 10px var(--success);
+      transform: scale(1.2);
     }
 
-    .btn-toggle-engine {
-      background: linear-gradient(135deg, var(--primary), var(--accent));
-      border: none;
-      color: white;
-      padding: 10px 22px;
-      border-radius: 24px;
-      font-weight: 600;
+    .btn-power {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 22px;
+      border-radius: 22px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.03em;
       cursor: pointer;
-      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
-      transition: all 0.2s;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: linear-gradient(135deg, #4f46e5, #06b6d4);
+      color: #fff;
+      box-shadow: 0 4px 18px rgba(79, 70, 229, 0.35);
+      transition: var(--transition);
     }
-    .btn-toggle-engine.active {
+    .btn-power:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 22px rgba(79, 70, 229, 0.5);
+    }
+    .btn-power.active {
       background: linear-gradient(135deg, #ef4444, #f97316);
-      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+      box-shadow: 0 4px 18px rgba(239, 68, 68, 0.4);
     }
 
-    .main-container {
+    /* Subheader Ribbon */
+    .ribbon {
+      height: 48px;
+      padding: 0 24px;
+      background: rgba(9, 13, 22, 0.6);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-shrink: 0;
+    }
+
+    .quick-toggles {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .chip-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .chip-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-main);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+    .chip-btn.active {
+      background: rgba(239, 68, 68, 0.15);
+      border-color: rgba(239, 68, 68, 0.4);
+      color: #fca5a5;
+    }
+    .chip-btn.active-info {
+      background: rgba(6, 182, 212, 0.15);
+      border-color: rgba(6, 182, 212, 0.4);
+      color: #67e8f9;
+    }
+
+    .filter-search-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .search-input-box {
+      position: relative;
+      width: 190px;
+    }
+    .search-input-box input {
+      width: 100%;
+      height: 30px;
+      padding: 0 10px 0 28px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      color: var(--text-main);
+      font-size: 12px;
+      outline: none;
+      transition: var(--transition);
+    }
+    .search-input-box input:focus {
+      border-color: var(--primary);
+      width: 230px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+    .search-input-box svg {
+      position: absolute;
+      left: 8px;
+      top: 8px;
+      color: var(--text-dim);
+    }
+
+    .filter-tabs {
+      display: flex;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 3px;
+      border-radius: 8px;
+      border: 1px solid var(--border-subtle);
+      gap: 2px;
+    }
+    .filter-tab {
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .filter-tab:hover {
+      color: var(--text-main);
+    }
+    .filter-tab.active {
+      background: rgba(99, 102, 241, 0.25);
+      color: #e0e7ff;
+      font-weight: 600;
+    }
+
+    /* Main Workspace Layout */
+    .workspace {
       flex: 1;
       display: grid;
-      grid-template-columns: 1fr 360px;
-      gap: 24px;
-      padding: 24px 28px;
+      grid-template-columns: 1fr 380px;
+      gap: 20px;
+      padding: 20px 24px;
+      overflow: hidden;
     }
 
-    /* Voice Grid */
-    .section-title {
-      font-size: 16px;
-      font-weight: 600;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-bottom: 16px;
-    }
-
-    .voices-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 18px;
-    }
-
-    .voice-card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 16px;
-      padding: 20px;
+    /* Left Voice Studio */
+    .voice-studio-container {
       display: flex;
       flex-direction: column;
-      align-items: center;
-      text-align: center;
-      cursor: pointer;
-      backdrop-filter: blur(8px);
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-      position: relative;
-    }
-    .voice-card:hover {
-      transform: translateY(-4px);
-      border-color: rgba(99, 102, 241, 0.5);
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
-    }
-    .voice-card.active {
-      border-color: var(--accent);
-      box-shadow: 0 0 20px rgba(6, 182, 212, 0.35);
-      background: rgba(30, 41, 67, 0.85);
+      overflow: hidden;
+      min-height: 0;
     }
 
-    .voice-avatar {
-      width: 72px;
-      height: 72px;
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      flex-shrink: 0;
+    }
+    .section-title {
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .voice-scroll-area {
+      flex: 1;
+      overflow-y: auto;
+      padding-right: 6px;
+      min-height: 0;
+    }
+
+    .voice-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(215px, 1fr));
+      gap: 14px;
+      padding-bottom: 20px;
+    }
+
+    /* Voice Cards */
+    .voice-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      cursor: pointer;
+      backdrop-filter: blur(12px);
+      transition: var(--transition);
+      overflow: hidden;
+    }
+    .voice-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: transparent;
+      transition: var(--transition);
+    }
+    .voice-card:hover {
+      transform: translateY(-3px);
+      background: var(--bg-card-hover);
+      border-color: rgba(99, 102, 241, 0.35);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+    }
+    .voice-card.active {
+      background: rgba(30, 42, 68, 0.8);
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 24px rgba(6, 182, 212, 0.28);
+    }
+    .voice-card.active::before {
+      background: linear-gradient(90deg, var(--primary), var(--accent-cyan));
+    }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .card-category {
+      font-size: 10px;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      padding: 2px 7px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.06);
+      color: #cbd5e1;
+    }
+    .card-pitch-tag {
+      font-size: 10px;
+      font-weight: 600;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.1);
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+
+    .avatar-wrapper {
+      position: relative;
+      width: 58px;
+      height: 58px;
+      margin: 0 auto 10px;
+    }
+    .avatar-circle {
+      width: 100%;
+      height: 100%;
       border-radius: 50%;
-      background: linear-gradient(135deg, #3730a3, #0284c7);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 28px;
-      margin-bottom: 14px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      font-size: 24px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+    }
+    .active-badge {
+      position: absolute;
+      bottom: -2px;
+      right: -2px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--accent-cyan);
+      color: #07090e;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 8px var(--accent-cyan);
+    }
+    .voice-card.active .active-badge {
+      display: flex;
     }
 
-    .voice-name {
-      font-size: 16px;
-      font-weight: 600;
-      margin-bottom: 6px;
+    .card-body {
+      text-align: center;
+      flex: 1;
     }
-    .voice-desc {
-      font-size: 12px;
-      color: var(--text-muted);
-      line-height: 1.4;
-      margin-bottom: 12px;
+    .card-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 4px;
     }
-    .voice-tag {
+    .card-desc {
       font-size: 11px;
-      padding: 3px 10px;
-      border-radius: 12px;
-      background: rgba(255, 255, 255, 0.08);
-      color: #38bdf8;
+      color: var(--text-muted);
+      line-height: 1.35;
+      margin-bottom: 12px;
+      min-height: 28px;
     }
 
-    /* Right Control Sidebar */
-    .controls-panel {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 16px;
-      padding: 24px;
+    .model-status-pill {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: 10.5px;
+      font-weight: 600;
+      padding: 5px 8px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .model-status-pill.ready {
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.28);
+      color: #6ee7b7;
+    }
+    .model-status-pill.missing {
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.28);
+      color: #fcd34d;
+    }
+
+    /* Right Control Rack */
+    .control-rack {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 20px;
       display: flex;
       flex-direction: column;
-      gap: 20px;
-      backdrop-filter: blur(10px);
+      gap: 16px;
+      overflow-y: auto;
+      backdrop-filter: blur(16px);
+      min-height: 0;
     }
 
-    .visualizer-box {
+    /* Visualizer Box */
+    .visualizer-card {
+      background: #060912;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      position: relative;
+    }
+    .canvas-container {
       width: 100%;
-      height: 90px;
-      background: #060913;
-      border-radius: 12px;
+      height: 82px;
+      border-radius: 8px;
       overflow: hidden;
-      border: 1px solid var(--card-border);
+      background: radial-gradient(circle at 50% 50%, #0d1527 0%, #05070e 100%);
     }
     canvas {
       width: 100%;
@@ -207,222 +513,727 @@
       display: block;
     }
 
-    .control-group {
+    /* VU Meters */
+    .meter-cluster {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .meter-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .meter-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10.5px;
+      color: var(--text-dim);
+      font-weight: 600;
+    }
+    .meter-track {
+      height: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 3px;
+      overflow: hidden;
+      position: relative;
+    }
+    .meter-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #10b981 60%, #f59e0b 85%, #ef4444 100%);
+      border-radius: 3px;
+      transition: width 0.08s ease-out;
+    }
+
+    /* Studio Sliders */
+    .slider-card {
       display: flex;
       flex-direction: column;
       gap: 8px;
+      padding: 10px 12px;
+      background: rgba(255, 255, 255, 0.025);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
     }
-    .control-label {
+
+    .slider-header {
       display: flex;
       justify-content: space-between;
-      font-size: 13px;
-      font-weight: 500;
-    }
-    .control-val {
-      color: var(--accent);
+      align-items: center;
+      font-size: 12px;
       font-weight: 600;
+    }
+    .slider-val {
+      color: var(--accent-cyan);
+      font-weight: 700;
+      font-size: 12px;
     }
 
     input[type=range] {
       -webkit-appearance: none;
       width: 100%;
-      height: 6px;
+      height: 5px;
       background: rgba(255, 255, 255, 0.1);
       border-radius: 3px;
       outline: none;
+      transition: var(--transition);
     }
     input[type=range]::-webkit-slider-thumb {
       -webkit-appearance: none;
-      width: 18px;
-      height: 18px;
+      width: 16px;
+      height: 16px;
       border-radius: 50%;
-      background: var(--primary);
+      background: #818cf8;
+      box-shadow: 0 0 10px rgba(99, 102, 241, 0.7);
       cursor: pointer;
-      box-shadow: 0 0 10px var(--primary);
-      transition: transform 0.1s;
+      transition: transform 0.12s;
     }
     input[type=range]::-webkit-slider-thumb:hover {
-      transform: scale(1.15);
+      transform: scale(1.2);
+      background: #a5b4fc;
     }
 
+    .quick-pitch-chips {
+      display: flex;
+      gap: 4px;
+      margin-top: 4px;
+    }
+    .pitch-chip {
+      flex: 1;
+      padding: 3px 0;
+      text-align: center;
+      font-size: 10px;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-subtle);
+      border-radius: 4px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .pitch-chip:hover {
+      background: rgba(99, 102, 241, 0.2);
+      color: #e0e7ff;
+      border-color: rgba(99, 102, 241, 0.4);
+    }
+
+    /* Hardware Selectors */
+    .device-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .device-label {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
     select {
       width: 100%;
-      padding: 8px 12px;
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid var(--card-border);
-      color: var(--text);
-      border-radius: 8px;
+      padding: 8px 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      color: var(--text-main);
+      font-size: 12px;
       outline: none;
-      font-size: 13px;
+      transition: var(--transition);
+      cursor: pointer;
+    }
+    select:focus {
+      border-color: var(--primary);
+      background: rgba(18, 24, 38, 0.95);
+    }
+    select option {
+      background: #0f1422;
+      color: #fff;
     }
 
+    /* Footer */
     footer {
-      padding: 12px 28px;
-      border-top: 1px solid var(--card-border);
+      height: 38px;
+      padding: 0 24px;
+      background: var(--bg-glass);
+      border-top: 1px solid var(--border-subtle);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 12px;
+      font-size: 11px;
+      color: var(--text-dim);
+      flex-shrink: 0;
+    }
+
+    /* Modals */
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+    .modal-backdrop.show {
+      display: flex;
+    }
+    .modal-content {
+      width: 460px;
+      background: #111726;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+    .modal-close {
+      cursor: pointer;
+      color: var(--text-dim);
+      background: none;
+      border: none;
+      font-size: 18px;
+    }
+    .modal-body {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      font-size: 12.5px;
       color: var(--text-muted);
-      background: rgba(11, 15, 25, 0.85);
+    }
+    .form-row {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .form-input {
+      padding: 8px 12px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      color: #fff;
+      font-size: 12.5px;
+      outline: none;
+    }
+    .form-input:focus {
+      border-color: var(--primary);
+    }
+    .btn-submit {
+      padding: 10px;
+      border-radius: var(--radius-sm);
+      border: none;
+      background: linear-gradient(135deg, var(--primary), var(--accent-cyan));
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 6px;
+    }
+    .file-box-guide {
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px dashed rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 11.5px;
+      line-height: 1.5;
+    }
+    .file-box-guide code {
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.12);
+      padding: 2px 4px;
+      border-radius: 4px;
     }
   </style>
 </head>
 <body>
+
+  <!-- App Header -->
   <header>
-    <div class="brand">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
-      AURA VOICE AI
+    <div class="brand-cluster">
+      <div class="logo-badge">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+          <line x1="12" x2="12" y1="19" y2="22"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-title">
+          AURA AI STUDIO
+          <span class="version-pill">v2.0 Native</span>
+        </div>
+      </div>
     </div>
-    <div class="status-bar">
-      <div class="stat-badge">
-        <div id="vadIndicator" class="vad-dot"></div>
-        <span>VAD Mic</span>
+
+    <div class="header-telemetry">
+      <div class="hud-pill">
+        <div id="vadLight" class="vad-light"></div>
+        <span>Mic VAD</span>
       </div>
-      <div class="stat-badge">
+
+      <div class="hud-pill">
         <span>Inference:</span>
-        <b id="latencyVal" style="color:#38bdf8;">-- ms</b>
+        <strong id="latencyHUD" style="color: #38bdf8;">-- ms</strong>
       </div>
-      <div class="stat-badge">
-        <span>Queue / Drop:</span>
-        <b id="queueVal" style="color:#a78bfa;">0 ms / 0</b>
+
+      <div class="hud-pill">
+        <span>Queue/Drop:</span>
+        <strong id="queueHUD" style="color: #a78bfa;">0 ms / 0</strong>
       </div>
-      <button id="btnToggleEngine" class="btn-toggle-engine" onclick="toggleEngine()">BẬT ĐỔI GIỌNG</button>
+
+      <button id="btnPowerEngine" class="btn-power" onclick="toggleEngine()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" x2="12" y1="2" y2="12"/></svg>
+        <span id="powerText">BẬT ĐỔI GIỌNG</span>
+      </button>
     </div>
   </header>
 
-  <div class="main-container">
-    <div>
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <div class="section-title">Danh sách giọng AI & Profile (Hot-swap)</div>
-        <button onclick="rescanVoices()" style="background:#1e293b; color:#94a3b8; border:1px solid #334155; padding:4px 10px; border-radius:6px; font-size:12px; cursor:pointer;">Quét lại Model</button>
-      </div>
-      <div id="voicesGrid" class="voices-grid">
-        <!-- Cards generated by JS -->
-      </div>
+  <!-- Control Ribbon -->
+  <div class="ribbon">
+    <div class="quick-toggles">
+      <button id="btnMute" class="chip-btn" onclick="toggleMute()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="1" y1="1" x2="23" y2="23"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"/><path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        <span>Mute Mic</span>
+      </button>
+
+      <button id="btnBypass" class="chip-btn" onclick="toggleBypass()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
+        <span>Bypass (Giọng gốc)</span>
+      </button>
+
+      <button class="chip-btn" onclick="openVoicesFolder()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        <span>Mở thư mục Models</span>
+      </button>
+
+      <button class="chip-btn" onclick="rescanVoices()">
+        <svg id="rescanIcon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+        <span>Quét lại AI</span>
+      </button>
+
+      <button class="chip-btn" onclick="openImportModal()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span>Thêm Giọng Mới</span>
+      </button>
     </div>
 
-    <div class="controls-panel">
-      <div class="section-title">Bảng điều khiển Realtime</div>
-
-      <div class="visualizer-box">
-        <canvas id="visualizerCanvas"></canvas>
+    <div class="filter-search-group">
+      <div class="search-input-box">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="searchInput" placeholder="Tìm kiếm model giọng..." oninput="filterVoices()">
       </div>
 
-      <div class="control-group">
-        <div class="control-label">
-          <span>Pitch Shift (Semitones)</span>
-          <span id="pitchVal" class="control-val">0.0</span>
-        </div>
-        <input type="range" id="pitchSlider" min="-12" max="12" step="0.5" value="0" oninput="updatePitch(this.value)">
-      </div>
-
-      <div class="control-group">
-        <div class="control-label">
-          <span>Noise Gate (dBFS)</span>
-          <span id="denoiseVal" class="control-val">-45 dB</span>
-        </div>
-        <input type="range" id="denoiseSlider" min="-80" max="-10" step="1" value="-45" oninput="updateDenoise(this.value)">
-      </div>
-
-      <div class="control-group">
-        <div class="control-label">
-          <span>Monitor Volume (Tai nghe)</span>
-          <span id="monVolVal" class="control-val">100%</span>
-        </div>
-        <input type="range" id="monVolSlider" min="0" max="2" step="0.05" value="1" oninput="updateVolume('monitor', this.value)">
-      </div>
-
-      <hr style="border: 0; border-top: 1px solid var(--card-border); margin: 6px 0;">
-
-      <div class="control-group">
-        <label class="control-label">Microphone Input</label>
-        <select id="inputDeviceSelect" onchange="applyDevices()"></select>
-      </div>
-
-      <div class="control-group">
-        <label class="control-label">Virtual Output (Discord/VB-Cable)</label>
-        <select id="outputDeviceSelect" onchange="applyDevices()"></select>
-      </div>
-
-      <div class="control-group">
-        <label class="control-label">Monitor Device (Nghe kiểm âm)</label>
-        <select id="monitorDeviceSelect" onchange="applyDevices()"></select>
+      <div class="filter-tabs">
+        <div class="filter-tab active" data-cat="all" onclick="setCategoryFilter('all', this)">Tất cả</div>
+        <div class="filter-tab" data-cat="female" onclick="setCategoryFilter('female', this)">Nữ</div>
+        <div class="filter-tab" data-cat="male" onclick="setCategoryFilter('male', this)">Nam</div>
+        <div class="filter-tab" data-cat="anime" onclick="setCategoryFilter('anime', this)">Anime</div>
+        <div class="filter-tab" data-cat="custom" onclick="setCategoryFilter('custom', this)">Custom</div>
       </div>
     </div>
   </div>
 
+  <!-- Workspace Grid -->
+  <div class="workspace">
+    <!-- Left Voice Studio -->
+    <div class="voice-studio-container">
+      <div class="section-header">
+        <div class="section-title">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+          Thư viện Giọng AI RVC v2
+        </div>
+        <span id="voiceCountBadge" style="font-size: 11px; color: var(--text-dim);">10 models</span>
+      </div>
+
+      <div class="voice-scroll-area">
+        <div id="voicesGrid" class="voice-grid">
+          <!-- Voice cards injected via JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Control Studio Rack -->
+    <div class="control-rack">
+      <!-- Live Visualizer & Meters -->
+      <div class="visualizer-card">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Live Audio Spectrum</span>
+          <span id="activeModelTag" style="font-size: 11px; color: var(--accent-cyan); font-weight: 600;">--</span>
+        </div>
+
+        <div class="canvas-container">
+          <canvas id="audioWaveCanvas"></canvas>
+        </div>
+
+        <div class="meter-cluster">
+          <div class="meter-item">
+            <div class="meter-label">
+              <span>MIC IN</span>
+              <span id="inLevelTxt">-inf dB</span>
+            </div>
+            <div class="meter-track">
+              <div id="inMeterFill" class="meter-fill"></div>
+            </div>
+          </div>
+          <div class="meter-item">
+            <div class="meter-label">
+              <span>AI OUT</span>
+              <span id="outLevelTxt">-inf dB</span>
+            </div>
+            <div class="meter-track">
+              <div id="outMeterFill" class="meter-fill"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DSP Tuning Controls -->
+      <div class="slider-card">
+        <div class="slider-header">
+          <span>Cao độ (Pitch Semitones)</span>
+          <span id="pitchVal" class="slider-val">0.0 st</span>
+        </div>
+        <input type="range" id="pitchSlider" min="-12" max="12" step="0.5" value="0" oninput="updatePitch(this.value)">
+        <div class="quick-pitch-chips">
+          <div class="pitch-chip" onclick="quickPitch(-12)">-12 (Nam)</div>
+          <div class="pitch-chip" onclick="quickPitch(-6)">-6</div>
+          <div class="pitch-chip" onclick="quickPitch(0)">0 (Gốc)</div>
+          <div class="pitch-chip" onclick="quickPitch(6)">+6</div>
+          <div class="pitch-chip" onclick="quickPitch(12)">+12 (Nữ)</div>
+        </div>
+      </div>
+
+      <div class="slider-card">
+        <div class="slider-header">
+          <span>Khử ồn Noise Gate</span>
+          <span id="denoiseVal" class="slider-val">-45 dB</span>
+        </div>
+        <input type="range" id="denoiseSlider" min="-80" max="-10" step="1" value="-45" oninput="updateDenoise(this.value)">
+      </div>
+
+      <div class="slider-card">
+        <div class="slider-header">
+          <span>Âm lượng Mic Input</span>
+          <span id="inVolVal" class="slider-val">100%</span>
+        </div>
+        <input type="range" id="inVolSlider" min="0" max="2" step="0.05" value="1" oninput="updateVolume('input', this.value)">
+      </div>
+
+      <div class="slider-card">
+        <div class="slider-header">
+          <span>Master Output (Discord/Cable)</span>
+          <span id="outVolVal" class="slider-val">100%</span>
+        </div>
+        <input type="range" id="outVolSlider" min="0" max="2" step="0.05" value="1" oninput="updateVolume('output', this.value)">
+      </div>
+
+      <div class="slider-card">
+        <div class="slider-header">
+          <span>Tai nghe kiểm âm (Monitor)</span>
+          <span id="monVolVal" class="slider-val">100%</span>
+        </div>
+        <input type="range" id="monVolSlider" min="0" max="2" step="0.05" value="1" oninput="updateVolume('monitor', this.value)">
+      </div>
+
+      <!-- Hardware Device Routing -->
+      <div style="display:flex; flex-direction:column; gap:10px; margin-top:2px;">
+        <div class="device-group">
+          <label class="device-label">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+            Microphone Đầu Vào (Input)
+          </label>
+          <select id="inputDeviceSelect" onchange="applyDevices()"></select>
+        </div>
+
+        <div class="device-group">
+          <label class="device-label">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+            Cổng Ra Ảo (Discord / VB-Audio Cable)
+          </label>
+          <select id="outputDeviceSelect" onchange="applyDevices()"></select>
+        </div>
+
+        <div class="device-group">
+          <label class="device-label">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>
+            Tai Nghe Kiểm Âm (Monitor Headphones)
+          </label>
+          <select id="monitorDeviceSelect" onchange="applyDevices()"></select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
   <footer>
-    <span>Trạng thái: Sẵn sàng | Engine: Python ONNX Low-Latency</span>
-    <span>Aura Real-time Voice Changer v1.0</span>
+    <span id="footerStatus">Trạng thái: Sẵn sàng | Engine: Python ONNX Worker Thread (48kHz Mono)</span>
+    <span>Aura AI Studio 2.0 · Designed for Low-Latency Real-Time Gaming</span>
   </footer>
 
+  <!-- Import Modal -->
+  <div id="importModal" class="modal-backdrop">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">Thêm Model Giọng Mới (RVC v2)</div>
+        <button class="modal-close" onclick="closeImportModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <label>Mã định danh (ID không dấu, vd: goku, lisa):</label>
+          <input type="text" id="newVoiceId" class="form-input" placeholder="ten_giong_ai">
+        </div>
+        <div class="form-row">
+          <label>Tên hiển thị:</label>
+          <input type="text" id="newVoiceName" class="form-input" placeholder="Tên Giọng (Vd: Goku Anime)">
+        </div>
+        <div class="form-row">
+          <label>Thể loại / Giới tính:</label>
+          <select id="newVoiceGender" class="form-input">
+            <option value="female">Nữ (Female)</option>
+            <option value="male">Nam (Male)</option>
+            <option value="anime">Anime Character</option>
+            <option value="custom">Custom Character</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>Độ lệch cao độ cơ sở (Pitch Semitones):</label>
+          <input type="number" id="newVoicePitch" class="form-input" value="0" step="0.5">
+        </div>
+
+        <div class="file-box-guide">
+          <strong>Cần 3 file weights ONNX vào thư mục sau khi tạo:</strong><br>
+          1. <code>model.onnx</code> (Voice Synthesizer)<br>
+          2. <code>hubert.onnx</code> (Content Features Extractor)<br>
+          3. <code>rmvpe.onnx</code> (F0 Pitch Estimator)
+        </div>
+
+        <button class="btn-submit" onclick="submitNewVoice()">Tạo Profile & Mở Thư Mục</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Guide Modal -->
+  <div id="guideModal" class="modal-backdrop">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title" id="guideTitle">Hướng dẫn nạp model ONNX</div>
+        <button class="modal-close" onclick="closeGuideModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p id="guideMsg">Profile này chưa có đủ file weights AI để biến đổi âm thanh.</p>
+        <div class="file-box-guide">
+          Vui lòng sao chép các file sau vào thư mục voice:
+          <ul style="margin-left: 18px; margin-top: 6px;">
+            <li><code>model.onnx</code></li>
+            <li><code>hubert.onnx</code></li>
+            <li><code>rmvpe.onnx</code></li>
+          </ul>
+        </div>
+        <button class="btn-submit" onclick="openVoicesFolder(); closeGuideModal();">Mở Thư Mục Voices</button>
+      </div>
+    </div>
+  </div>
+
   <script>
+    let allVoices = [];
     let activeVoiceId = null;
     let isRunning = false;
+    let isMuted = false;
+    let isBypass = false;
+    let currentFilter = 'all';
+
+    const AVATAR_PALETTES = {
+      female: { bg: 'linear-gradient(135deg, #ec4899, #8b5cf6)', emoji: '🌸' },
+      male: { bg: 'linear-gradient(135deg, #3b82f6, #1d4ed8)', emoji: '🎙️' },
+      anime: { bg: 'linear-gradient(135deg, #f59e0b, #ef4444)', emoji: '⚡' },
+      custom: { bg: 'linear-gradient(135deg, #10b981, #06b6d4)', emoji: '🔮' }
+    };
 
     async function loadVoices() {
       try {
         const res = await fetch('/api/voices');
-        const voices = await res.json();
-        const grid = document.getElementById('voicesGrid');
-        grid.innerHTML = '';
-
-        voices.forEach(v => {
-          const card = document.createElement('div');
-          card.className = `voice-card ${v.id === activeVoiceId ? 'active' : ''}`;
-          card.style.opacity = v.model_ready ? '1' : '0.55';
-          card.onclick = () => switchVoice(v.id);
-
-          const emoji = v.gender === 'female' ? '🌸' : v.gender === 'male' ? '🎙️' : '🤖';
-          card.innerHTML = `
-            <div class="voice-avatar">${emoji}</div>
-            <div class="voice-name">${v.name}</div>
-            <div class="voice-desc">${v.description}</div>
-            <div class="voice-tag">${v.model_ready ? 'AI sẵn sàng · ' + v.backend : 'Thiếu: ' + v.missing_files.join(', ')}</div>
-          `;
-          grid.appendChild(card);
-        });
+        allVoices = await res.json();
+        renderVoices();
       } catch (e) {
         console.error("Failed to load voices", e);
       }
     }
 
-    async function switchVoice(voiceId) {
-      activeVoiceId = voiceId;
-      await fetch('/api/switch_voice', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({voice_id: voiceId})
+    function renderVoices() {
+      const grid = document.getElementById('voicesGrid');
+      const searchVal = document.getElementById('searchInput').value.trim().toLowerCase();
+      grid.innerHTML = '';
+
+      const filtered = allVoices.filter(v => {
+        const matchCategory = currentFilter === 'all' || v.gender === currentFilter || (currentFilter === 'anime' && (v.name.toLowerCase().includes('anime') || v.gender === 'anime'));
+        const matchSearch = !searchVal || v.name.toLowerCase().includes(searchVal) || v.description.toLowerCase().includes(searchVal);
+        return matchCategory && matchSearch;
       });
-      loadVoices();
+
+      document.getElementById('voiceCountBadge').innerText = `${filtered.length} / ${allVoices.length} models`;
+
+      filtered.forEach(v => {
+        const card = document.createElement('div');
+        const isActive = v.id === activeVoiceId;
+        card.className = `voice-card ${isActive ? 'active' : ''}`;
+        card.onclick = () => selectVoice(v);
+
+        const palette = AVATAR_PALETTES[v.gender] || AVATAR_PALETTES.custom;
+        const pitchSign = v.pitch_shift > 0 ? `+${v.pitch_shift}` : `${v.pitch_shift}`;
+
+        card.innerHTML = `
+          <div class="card-top">
+            <span class="card-category">${v.gender || 'AI'}</span>
+            <span class="card-pitch-tag">${pitchSign} st</span>
+          </div>
+          <div class="avatar-wrapper">
+            <div class="avatar-circle" style="background: ${palette.bg}">
+              ${palette.emoji}
+            </div>
+            <div class="active-badge">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="card-name">${v.name}</div>
+            <div class="card-desc">${v.description}</div>
+          </div>
+          <div class="model-status-pill ${v.model_ready ? 'ready' : 'missing'}">
+            ${v.model_ready ? '● RVC AI Sẵn Sàng' : '▲ Thiếu File Weights'}
+          </div>
+        `;
+
+        grid.appendChild(card);
+      });
+    }
+
+    async function selectVoice(v) {
+      if (!v.model_ready) {
+        document.getElementById('guideTitle').innerText = `Cần nạp model cho "${v.name}"`;
+        document.getElementById('guideMsg').innerText = `Voice profile "${v.name}" đang thiếu: ${v.missing_files.join(', ')}. Hãy đặt các file này vào voices/${v.id}/.`;
+        document.getElementById('guideModal').classList.add('show');
+      }
+
+      activeVoiceId = v.id;
+      document.getElementById('activeModelTag').innerText = v.name;
+      try {
+        await fetch('/api/switch_voice', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({voice_id: v.id})
+        });
+      } catch (e) {
+        console.error(e);
+      }
+      renderVoices();
     }
 
     async function toggleEngine() {
-      const res = await fetch('/api/toggle_engine', {method: 'POST'});
-      const data = await res.json();
-      isRunning = data.running;
-      updateEngineButton();
-    }
-
-    function updateEngineButton() {
-      const btn = document.getElementById('btnToggleEngine');
-      if (isRunning) {
-        btn.innerText = "TẮT ĐỔI GIỌNG";
-        btn.classList.add('active');
-      } else {
-        btn.innerText = "BẬT ĐỔI GIỌNG";
-        btn.classList.remove('active');
+      try {
+        const res = await fetch('/api/toggle_engine', {method: 'POST'});
+        const data = await res.json();
+        isRunning = data.running;
+        updateEngineUI();
+      } catch (e) {
+        console.error(e);
       }
     }
 
+    function updateEngineUI() {
+      const btn = document.getElementById('btnPowerEngine');
+      const text = document.getElementById('powerText');
+      if (isRunning) {
+        btn.classList.add('active');
+        text.innerText = "TẮT ĐỔI GIỌNG";
+      } else {
+        btn.classList.remove('active');
+        text.innerText = "BẬT ĐỔI GIỌNG";
+      }
+    }
+
+    async function toggleMute() {
+      try {
+        const res = await fetch('/api/toggle_mute', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({muted: !isMuted})
+        });
+        const data = await res.json();
+        isMuted = data.muted;
+        document.getElementById('btnMute').classList.toggle('active', isMuted);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function toggleBypass() {
+      try {
+        const res = await fetch('/api/toggle_bypass', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({bypass: !isBypass})
+        });
+        const data = await res.json();
+        isBypass = data.bypass;
+        document.getElementById('btnBypass').classList.toggle('active-info', isBypass);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function openVoicesFolder() {
+      try {
+        await fetch('/api/open_voices_folder', {method: 'POST'});
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function rescanVoices() {
+      const icon = document.getElementById('rescanIcon');
+      icon.style.transition = 'transform 0.5s';
+      icon.style.transform = 'rotate(360deg)';
+      try {
+        await fetch('/api/rescan_voices', {method: 'POST'});
+        await loadVoices();
+      } catch (e) {
+        console.error(e);
+      }
+      setTimeout(() => {
+        icon.style.transform = 'rotate(0deg)';
+      }, 500);
+    }
+
     async function updatePitch(val) {
-      document.getElementById('pitchVal').innerText = (val > 0 ? '+' : '') + val;
+      const num = parseFloat(val);
+      document.getElementById('pitchVal').innerText = (num > 0 ? '+' : '') + num.toFixed(1) + " st";
       await fetch('/api/set_pitch', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({pitch: parseFloat(val)})
+        body: JSON.stringify({pitch: num})
       });
+    }
+
+    function quickPitch(val) {
+      document.getElementById('pitchSlider').value = val;
+      updatePitch(val);
     }
 
     async function updateDenoise(val) {
@@ -435,7 +1246,11 @@
     }
 
     async function updateVolume(type, val) {
-      document.getElementById('monVolVal').innerText = Math.round(val * 100) + "%";
+      const pct = Math.round(parseFloat(val) * 100);
+      if (type === 'input') document.getElementById('inVolVal').innerText = pct + "%";
+      if (type === 'output') document.getElementById('outVolVal').innerText = pct + "%";
+      if (type === 'monitor') document.getElementById('monVolVal').innerText = pct + "%";
+
       await fetch('/api/set_volume', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
@@ -463,7 +1278,7 @@
           monSelect.innerHTML += `<option value="${d.id}">${d.name} [${d.host_api}]</option>`;
         });
       } catch (e) {
-        console.error(e);
+        console.error("Load devices failed", e);
       }
     }
 
@@ -483,75 +1298,183 @@
       });
     }
 
-    async function rescanVoices() {
+    function filterVoices() {
+      renderVoices();
+    }
+
+    function setCategoryFilter(cat, el) {
+      currentFilter = cat;
+      document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+      renderVoices();
+    }
+
+    function openImportModal() {
+      document.getElementById('importModal').classList.add('show');
+    }
+    function closeImportModal() {
+      document.getElementById('importModal').classList.remove('show');
+    }
+    function closeGuideModal() {
+      document.getElementById('guideModal').classList.remove('show');
+    }
+
+    async function submitNewVoice() {
+      const vid = document.getElementById('newVoiceId').value.trim();
+      const vname = document.getElementById('newVoiceName').value.trim();
+      const vgender = document.getElementById('newVoiceGender').value;
+      const vpitch = parseFloat(document.getElementById('newVoicePitch').value) || 0;
+
+      if (!vid) {
+        alert("Vui lòng nhập ID định danh!");
+        return;
+      }
+
       try {
-        await fetch('/api/rescan_voices', {method: 'POST'});
+        const res = await fetch('/api/import_voice', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            voice_id: vid,
+            name: vname || vid,
+            gender: vgender,
+            pitch_shift: vpitch
+          })
+        });
+        const data = await res.json();
+        closeImportModal();
         await loadVoices();
+        openVoicesFolder();
       } catch (e) {
-        console.error("Rescan failed", e);
+        alert("Lỗi tạo giọng: " + e);
       }
     }
 
-    // Polling telemetry
-    async function pollStatus() {
+    // Polling Telemetry & Status
+    async function pollTelemetry() {
       try {
         const res = await fetch('/api/status');
-        const status = await res.json();
+        const st = await res.json();
 
-        isRunning = status.running;
-        updateEngineButton();
+        isRunning = st.running;
+        isMuted = st.muted;
+        isBypass = st.bypass;
+        updateEngineUI();
+        document.getElementById('btnMute').classList.toggle('active', isMuted);
+        document.getElementById('btnBypass').classList.toggle('active-info', isBypass);
 
-        document.getElementById('latencyVal').innerText = (status.worker_latency_ms || status.latency_ms) + " ms";
-        document.getElementById('queueVal').innerText = (status.queue_latency_ms || 0) + " ms / " + (status.drop_count || 0);
-        const vadDot = document.getElementById('vadIndicator');
-        if (status.is_speaking) {
-          vadDot.classList.add('active');
+        // Latency
+        const lat = st.worker_latency_ms || st.latency_ms || 0;
+        const latEl = document.getElementById('latencyHUD');
+        latEl.innerText = lat + " ms";
+        latEl.style.color = lat < 30 ? '#38bdf8' : lat < 60 ? '#facc15' : '#f87171';
+
+        document.getElementById('queueHUD').innerText = `${st.queue_latency_ms || 0} ms / ${st.drop_count || 0}`;
+
+        const vadEl = document.getElementById('vadLight');
+        if (st.is_speaking) {
+          vadEl.classList.add('speaking');
         } else {
-          vadDot.classList.remove('active');
+          vadEl.classList.remove('speaking');
         }
 
-        if (status.active_voice_id && status.active_voice_id !== activeVoiceId) {
-          activeVoiceId = status.active_voice_id;
-          loadVoices();
+        // Meters Simulation / Status
+        const inMeter = document.getElementById('inMeterFill');
+        const outMeter = document.getElementById('outMeterFill');
+        if (st.is_speaking && st.running) {
+          inMeter.style.width = '75%';
+          outMeter.style.width = '82%';
+          document.getElementById('inLevelTxt').innerText = '-12 dB';
+          document.getElementById('outLevelTxt').innerText = '-9 dB';
+        } else if (st.running) {
+          inMeter.style.width = '6%';
+          outMeter.style.width = '4%';
+          document.getElementById('inLevelTxt').innerText = '-54 dB';
+          document.getElementById('outLevelTxt').innerText = '-60 dB';
+        } else {
+          inMeter.style.width = '0%';
+          outMeter.style.width = '0%';
+          document.getElementById('inLevelTxt').innerText = '-inf dB';
+          document.getElementById('outLevelTxt').innerText = '-inf dB';
         }
+
+        if (st.active_voice_id && st.active_voice_id !== activeVoiceId) {
+          activeVoiceId = st.active_voice_id;
+          document.getElementById('activeModelTag').innerText = st.active_voice_name || st.active_voice_id;
+          renderVoices();
+        }
+
+        document.getElementById('footerStatus').innerText = 
+          `Trạng thái: ${st.running ? 'Đang chạy' : 'Tạm dừng'} | Model: ${st.active_voice_name || 'Chưa chọn'} (${st.backend_status || 'offline'}) | Buffer: 10ms (480 samples)`;
       } catch (e) {}
     }
 
-    // Audio Visualizer Canvas
-    const canvas = document.getElementById('visualizerCanvas');
+    // Cyber Wave Visualizer Canvas
+    const canvas = document.getElementById('audioWaveCanvas');
     const ctx = canvas.getContext('2d');
     function resizeCanvas() {
-      canvas.width = canvas.clientWidth * window.devicePixelRatio;
-      canvas.height = canvas.clientHeight * window.devicePixelRatio;
+      if (!canvas.parentElement) return;
+      canvas.width = canvas.parentElement.clientWidth * window.devicePixelRatio;
+      canvas.height = canvas.parentElement.clientHeight * window.devicePixelRatio;
     }
     window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
+    setTimeout(resizeCanvas, 100);
 
-    let wavePhase = 0;
-    function drawVisualizer() {
+    let phase = 0;
+    function renderVisualizer() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const isSpeaking = document.getElementById('vadIndicator').classList.contains('active');
-      const amplitude = isSpeaking ? canvas.height * 0.35 : 3;
+      const isSpeaking = document.getElementById('vadLight').classList.contains('speaking');
+      const activeRunning = isRunning;
 
+      const w = canvas.width;
+      const h = canvas.height;
+      const mid = h / 2;
+
+      // Glow layer
       ctx.beginPath();
-      ctx.lineWidth = 2 * window.devicePixelRatio;
-      ctx.strokeStyle = isSpeaking ? '#38bdf8' : '#334155';
+      ctx.lineWidth = 3 * window.devicePixelRatio;
+      const gradient = ctx.createLinearGradient(0, 0, w, 0);
+      if (activeRunning && isSpeaking) {
+        gradient.addColorStop(0, '#6366f1');
+        gradient.addColorStop(0.5, '#06b6d4');
+        gradient.addColorStop(1, '#ec4899');
+      } else if (activeRunning) {
+        gradient.addColorStop(0, '#312e81');
+        gradient.addColorStop(1, '#0e7490');
+      } else {
+        gradient.addColorStop(0, '#1e293b');
+        gradient.addColorStop(1, '#334155');
+      }
+      ctx.strokeStyle = gradient;
 
-      for (let x = 0; x < canvas.width; x++) {
-        const y = canvas.height / 2 + Math.sin(x * 0.03 + wavePhase) * amplitude * Math.sin(x / canvas.width * Math.PI);
+      const amplitude = activeRunning && isSpeaking ? h * 0.38 : activeRunning ? h * 0.08 : 2;
+      const freq = activeRunning && isSpeaking ? 0.025 : 0.015;
+
+      for (let x = 0; x < w; x++) {
+        const envelope = Math.sin((x / w) * Math.PI);
+        const y = mid + Math.sin(x * freq + phase) * amplitude * envelope + Math.cos(x * 0.01 - phase * 0.5) * (amplitude * 0.35) * envelope;
         if (x === 0) ctx.moveTo(x, y);
         else ctx.lineTo(x, y);
       }
       ctx.stroke();
-      wavePhase += isSpeaking ? 0.2 : 0.03;
-      requestAnimationFrame(drawVisualizer);
-    }
-    drawVisualizer();
 
-    // Init
+      // Mirror subtle fill
+      if (activeRunning && isSpeaking) {
+        ctx.lineTo(w, mid);
+        ctx.lineTo(0, mid);
+        ctx.fillStyle = 'rgba(6, 182, 212, 0.08)';
+        ctx.fill();
+      }
+
+      phase += activeRunning && isSpeaking ? 0.18 : 0.03;
+      requestAnimationFrame(renderVisualizer);
+    }
+    renderVisualizer();
+
+    // Start
     loadDevices();
     loadVoices();
-    setInterval(pollStatus, 400);
+    setInterval(pollTelemetry, 350);
   </script>
 </body>
 </html>

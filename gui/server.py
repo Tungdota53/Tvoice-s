@@ -1,5 +1,7 @@
 import json
 import logging
+import os
+import subprocess
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Optional
@@ -131,6 +133,28 @@ class VoiceAPIHandler(BaseHTTPRequestHandler):
             else:
                 self.pipeline.start()
             self._send_json({"running": self.pipeline.audio_io.is_running})
+            return
+
+        if path == "/api/toggle_bypass":
+            state = body.get("bypass")
+            res = self.pipeline.toggle_bypass(state)
+            self._send_json({"bypass": res})
+            return
+
+        if path == "/api/toggle_mute":
+            state = body.get("muted")
+            res = self.pipeline.toggle_mute(state)
+            self._send_json({"muted": res})
+            return
+
+        if path == "/api/open_voices_folder":
+            folder_path = self.pipeline.voice_manager.voices_dir
+            folder_path.mkdir(parents=True, exist_ok=True)
+            try:
+                os.startfile(str(folder_path))
+                self._send_json({"success": True, "path": str(folder_path)})
+            except Exception as e:
+                self._send_json({"success": False, "error": str(e)}, status=500)
             return
 
         if path == "/api/set_pitch":

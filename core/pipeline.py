@@ -113,6 +113,22 @@ class VoiceChangerPipeline:
         """Adjust noise gate threshold (-80 to 0 dBFS)."""
         self.noise_gate.threshold_db = float(threshold_db)
 
+    def toggle_bypass(self, state: Optional[bool] = None) -> bool:
+        """Toggle or set passthrough bypass mode."""
+        if state is None:
+            self.audio_io.bypass = not self.audio_io.bypass
+        else:
+            self.audio_io.bypass = bool(state)
+        return self.audio_io.bypass
+
+    def toggle_mute(self, state: Optional[bool] = None) -> bool:
+        """Toggle or set audio mute mode."""
+        if state is None:
+            self.audio_io.is_muted = not self.audio_io.is_muted
+        else:
+            self.audio_io.is_muted = bool(state)
+        return self.audio_io.is_muted
+
     def start(self):
         self.worker.start()
         self.audio_io.start()

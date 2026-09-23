@@ -2,6 +2,7 @@ import argparse
 import logging
 import sys
 import threading
+import time
 import webbrowser
 
 from core.pipeline import VoiceChangerPipeline
@@ -19,30 +20,58 @@ def main():
     parser = argparse.ArgumentParser(description="Aura Real-Time AI Voice Changer")
     parser.add_argument("--host", default="127.0.0.1", help="Host address for UI server")
     parser.add_argument("--port", type=int, default=7860, help="Port for UI server")
-    parser.add_argument("--no-browser", action="store_true", help="Do not open browser automatically")
+    parser.add_argument("--browser", action="store_true", help="Open in standard web browser instead of desktop window")
     args = parser.parse_args()
 
     logger.info("Initializing Aura Voice Engine...")
     pipeline = VoiceChangerPipeline()
 
     server = start_server(pipeline, host=args.host, port=args.port)
+    server_thread = threading.Thread(target=server.serve_forever, daemon=True)
+    server_thread.start()
+
     url = f"http://{args.host}:{args.port}"
     print(f"\n=======================================================")
-    print(f"  AURA AI VOICE CHANGER - READY")
-    print(f"  Open UI in browser: {url}")
-    print(f"  Press Ctrl+C to terminate.")
+    print(f"  AURA AI VOICE CHANGER - DESKTOP APP")
+    print(f"  Local API endpoint: {url}")
+    print(f"  Close desktop window to exit.")
     print(f"=======================================================\n")
 
-    if not args.no_browser:
-        threading.Timer(0.8, lambda: webbrowser.open(url)).start()
+    if args.browser:
+        logger.info("Browser mode enabled. Opening browser...")
+        webbrowser.open(url)
+        try:
+            while True:
+                time.sleep(1)
+        except KeyboardInterrupt:
+            pass
+    else:
+        try:
+            import webview
 
-    try:
-        server.serve_forever()
-    except KeyboardInterrupt:
-        logger.info("Shutting down Aura Voice Engine...")
-        pipeline.stop()
-        server.shutdown()
-        sys.exit(0)
+            logger.info("Launching native desktop application window...")
+            window = webview.create_window(
+                title="Aura AI Voice Changer",
+                url=url,
+                width=1180,
+                height=780,
+                min_size=(960, 640),
+                background_color="#0b0f19",
+            )
+            webview.start(debug=False)
+        except Exception as e:
+            logger.warning("Native window failed (%s), opening in browser fallback", e)
+            webbrowser.open(url)
+            try:
+                while True:
+                    time.sleep(1)
+            except KeyboardInterrupt:
+                pass
+
+    logger.info("Shutting down Aura Voice Engine...")
+    pipeline.stop()
+    server.shutdown()
+    sys.exit(0)
 
 
 if __name__ == "__main__":

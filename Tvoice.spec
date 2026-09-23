@@ -48,6 +48,22 @@ datas += sd_datas
 binaries += sd_binaries
 hiddenimports += sd_hidden
 
+# Collect pywebview and .NET bindings for native Windows window
+wv_datas, wv_binaries, wv_hidden = collect_all('webview')
+datas += wv_datas
+binaries += wv_binaries
+hiddenimports += wv_hidden
+
+pynet_datas, pynet_binaries, pynet_hidden = collect_all('pythonnet')
+datas += pynet_datas
+binaries += pynet_binaries
+hiddenimports += pynet_hidden
+
+clr_datas, clr_binaries, clr_hidden = collect_all('clr_loader')
+datas += clr_datas
+binaries += clr_binaries
+hiddenimports += clr_hidden
+
 a = Analysis(
     ['main.py'],
     pathex=['.'],

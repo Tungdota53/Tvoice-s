@@ -76,6 +76,50 @@ class VoiceAPIHandler(BaseHTTPRequestHandler):
             self._send_json({"success": success, "active": voice_id})
             return
 
+        if path == "/api/rescan_voices":
+            profiles = self.pipeline.voice_manager.scan_voices()
+            self._send_json({"count": len(profiles), "voices": self.pipeline.voice_manager.list_profiles_dict()})
+            return
+
+        if path == "/api/import_voice":
+            voice_id = body.get("voice_id", "").strip().lower().replace(" ", "_")
+            name = body.get("name", "").strip() or voice_id.title()
+            gender = body.get("gender", "custom")
+            pitch_shift = float(body.get("pitch_shift", 0.0))
+
+            if not voice_id:
+                self._send_json({"success": False, "error": "voice_id is required"}, status=400)
+                return
+
+            voice_dir = self.pipeline.voice_manager.voices_dir / voice_id
+            voice_dir.mkdir(parents=True, exist_ok=True)
+
+            config_data = {
+                "name": name,
+                "description": body.get("description", "Custom imported AI voice"),
+                "gender": gender,
+                "category": "ai_voice",
+                "backend": "rvc_onnx",
+                "pitch_shift": pitch_shift,
+                "warmth": 0.0,
+                "presence": 0.0,
+                "compression": 0.15,
+                "output_gain_db": 0.0,
+            }
+
+            config_file = voice_dir / "config.json"
+            with open(config_file, "w", encoding="utf-8") as f:
+                json.dump(config_data, f, indent=2, ensure_ascii=False)
+
+            self.pipeline.voice_manager.scan_voices()
+            self._send_json({
+                "success": True,
+                "voice_id": voice_id,
+                "folder": str(voice_dir),
+                "required_files": ["model.onnx", "hubert.onnx", "rmvpe.onnx"],
+            })
+            return
+
         if path == "/api/toggle_engine":
             if self.pipeline.audio_io.is_running:
                 self.pipeline.stop()

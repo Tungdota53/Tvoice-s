@@ -5,6 +5,7 @@ import numpy as np
 from config import AUDIO_CONFIG, PATH_CONFIG
 from core.audio_io import AudioIOEngine
 from core.noise_gate import NoiseGate
+from core.worker_pipeline import AudioWorkerPipeline
 from models.inference_engine import InferenceEngine
 from models.voice_manager import VoiceManager, VoiceProfile
 
@@ -27,6 +28,13 @@ class VoiceChangerPipeline:
             sample_rate=AUDIO_CONFIG.sample_rate,
         )
 
+        # Asynchronous worker to isolate PortAudio callback from heavy inference
+        self.worker = AudioWorkerPipeline(
+            chunk_size=AUDIO_CONFIG.chunk_size,
+            process_fn=self._process_worker_chunk,
+            max_queue_chunks=4,
+        )
+
         self.audio_io = AudioIOEngine(
             sample_rate=AUDIO_CONFIG.sample_rate,
             chunk_size=AUDIO_CONFIG.chunk_size,
@@ -34,7 +42,7 @@ class VoiceChangerPipeline:
             input_device=input_device,
             output_device=output_device,
             monitor_device=monitor_device,
-            process_callback=self._process_audio,
+            process_callback=self._audio_callback_handler,
         )
 
         # Dynamic adjustments
@@ -47,8 +55,13 @@ class VoiceChangerPipeline:
         if active and active.model_path:
             self.inference_engine.load_model(active.model_path, active)
 
-    def _process_audio(self, indata: np.ndarray) -> np.ndarray:
-        """Pipeline callback invoked per audio chunk."""
+    def _audio_callback_handler(self, indata: np.ndarray) -> np.ndarray:
+        """Ultra-fast callback: pushes input to worker and pulls ready output."""
+        self.worker.push_input(indata)
+        return self.worker.pull_output(fallback=indata)
+
+    def _process_worker_chunk(self, indata: np.ndarray) -> np.ndarray:
+        """Runs on background worker thread: noise gate + AI inference + anti-clip limiter."""
         # Step 1: Noise Gate / VAD
         gated_audio, is_speech = self.noise_gate.process(indata)
 
@@ -71,6 +84,10 @@ class VoiceChangerPipeline:
                 compression=profile.compression,
                 output_gain_db=profile.output_gain_db,
                 model_path=profile.model_path,
+                category=profile.category,
+                backend=profile.backend,
+                model_ready=profile.model_ready,
+                missing_files=profile.missing_files,
             )
 
         # Step 3: Run Inference / Conversion
@@ -97,20 +114,27 @@ class VoiceChangerPipeline:
         self.noise_gate.threshold_db = float(threshold_db)
 
     def start(self):
+        self.worker.start()
         self.audio_io.start()
 
     def stop(self):
         self.audio_io.stop()
+        self.worker.stop()
 
     def get_status(self) -> dict:
         """Return engine diagnostics for GUI monitoring."""
         active = self.voice_manager.get_active_profile()
+        worker_stats = self.worker.get_stats()
         return {
             "running": self.audio_io.is_running,
             "bypass": self.audio_io.bypass,
             "muted": self.audio_io.is_muted,
             "is_speaking": self.noise_gate.is_speaking,
             "latency_ms": round(self.inference_engine.last_latency_ms, 2),
+            "worker_latency_ms": worker_stats["worker_inference_ms"],
+            "queue_latency_ms": worker_stats["queue_latency_ms"],
+            "underrun_count": worker_stats["underrun_count"],
+            "drop_count": worker_stats["drop_count"],
             "active_voice_id": active.id if active else None,
             "active_voice_name": active.name if active else None,
             "model_ready": active.model_ready if active else False,

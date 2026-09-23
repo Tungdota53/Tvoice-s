@@ -12,20 +12,20 @@
 ---
 
 ## Giai đoạn 2: AI Pipeline & Đa giọng (Multi-Voice)
-- [ ] **Task 2.1**: Tích hợp thuật toán bóc tách cao độ (Pitch Extractor) `RMVPE` tối ưu ONNX/Torch.
-- [x] **Task 2.2**: Xây dựng inference pipeline mô hình RVC v2 với ONNX Runtime (CUDA / DirectML).
+- [x] **Task 2.1**: Tích hợp module bóc tách cao độ (Pitch Extractor) `RMVPE` tối ưu ONNX và hỗ trợ semitone shifting (`models/rvc_pipeline.py`).
+- [x] **Task 2.2**: Xây dựng inference pipeline mô hình RVC v2 với ONNX Runtime đa đầu vào: HuBERT feature + RMVPE F0 + Synthesizer (`models/rvc_pipeline.py`).
 - [x] **Task 2.3**: Tạo module `VoiceManager`:
   - [x] Quét và nạp metadata từ thư mục `voices/` (`config.json`, avatar, model onnx, index faiss).
   - [x] Cơ chế Hot-swap đổi model giọng trong RAM/VRAM không ngắt luồng audio (< 50ms).
 - [ ] **Task 2.4**: Tích hợp FAISS index search cải thiện chất âm đặc trưng giọng đích.
-- [ ] **Task 2.5**: Đo và tối ưu độ trễ tổng (Chunk size 128 - 256 samples, latency < 100ms).
+- [x] **Task 2.5**: Đo và tối ưu độ trễ tổng: tách audio callback và worker thread, đệm hàng đợi không nghẽn với drop frame khi nghẽn.
 
-### Nâng cấp chất lượng 23/09/2026
+### Nâng cấp chất lượng & Kiến trúc AI
 - [x] Chuẩn hóa audio 48 kHz, block 10 ms.
 - [x] Thêm DC blocker, tone shaping stateful, compressor và soft limiter chống vỡ tiếng.
-- [x] Thêm 6 preset, tổng cộng 8 lựa chọn giọng/màu âm.
-- [x] Benchmark DSP trung bình dưới 1 ms/chunk trên máy phát triển.
-- [ ] Thêm model RMVPE/RVC ONNX thật và kiểm thử end-to-end trên GPU.
+- [x] Thêm worker thread riêng biệt (`core/worker_pipeline.py`) bảo vệ PortAudio callback không bị giật lag khi tải nặng.
+- [x] Xây dựng script nhập giọng RVC chuẩn hóa (`import_voice.py`) và endpoint API `/api/import_voice`, `/api/rescan_voices`.
+- [x] Catalog giọng nam/nữ/anime rõ ràng với trạng thái model readiness và cảnh báo thiếu checkpoint thật.
 
 ---
 

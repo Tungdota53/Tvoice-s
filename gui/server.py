@@ -5,11 +5,16 @@ from pathlib import Path
 from typing import Optional
 from urllib.parse import urlparse
 
+from config import PATH_CONFIG
 from core.audio_io import AudioDeviceManager
 from core.pipeline import VoiceChangerPipeline
 
 logger = logging.getLogger(__name__)
+
+# Search in relative directory or inside bundled PyInstaller assets
 WEB_DIR = Path(__file__).resolve().parent / "web"
+if not WEB_DIR.exists() and (PATH_CONFIG.bundle_dir / "gui" / "web").exists():
+    WEB_DIR = PATH_CONFIG.bundle_dir / "gui" / "web"
 
 
 class VoiceAPIHandler(BaseHTTPRequestHandler):

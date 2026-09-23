@@ -52,5 +52,5 @@
 ## Giai đoạn 5: Tối ưu, Kiểm thử & Đóng gói
 - [ ] **Task 5.1**: Stress test chạy liên tục 4-8 tiếng kiểm tra rò rỉ bộ nhớ VRAM/RAM.
 - [ ] **Task 5.2**: Xử lý fallback GPU: tự động chuyển cấu hình DirectML/CPU khi không có card NVIDIA.
-- [ ] **Task 5.3**: Đóng gói Backend Python sang file thực thi độc lập (PyInstaller/Nuitka).
+- [x] **Task 5.3**: Đóng gói Backend Python sang file thực thi độc lập (`Tvoice.spec`, `build.bat`, thư mục phân phối `dist/Tvoice-s/`).
 - [ ] **Task 5.4**: Tạo bộ cài đặt hoàn chỉnh Windows (`.exe` / `.msi`) tự kèm script cấu hình audio driver.

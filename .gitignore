@@ -8,6 +8,7 @@ __pycache__/
 dist/
 build/
 *.spec
+!Tvoice.spec
 
 # Large voice model artifacts must be distributed separately or with Git LFS.
 voices/**/*.onnx

@@ -1,9 +1,12 @@
 import json
 import logging
+import shutil
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Dict, List, Optional
 import threading
+
+from config import PATH_CONFIG
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +48,18 @@ class VoiceManager:
             self.profiles.clear()
             if not self.voices_dir.exists():
                 self.voices_dir.mkdir(parents=True, exist_ok=True)
-                return []
+
+            # If empty and bundle has default voices, seed them
+            bundled_voices = PATH_CONFIG.bundle_dir / "voices"
+            if bundled_voices.exists() and bundled_voices.resolve() != self.voices_dir.resolve():
+                existing_subdirs = [f for f in self.voices_dir.iterdir() if f.is_dir()]
+                if not existing_subdirs:
+                    logger.info("Seeding default voice profiles from bundle: %s", bundled_voices)
+                    for item in bundled_voices.iterdir():
+                        if item.is_dir():
+                            dst = self.voices_dir / item.name
+                            if not dst.exists():
+                                shutil.copytree(item, dst)
 
             for folder in self.voices_dir.iterdir():
                 if not folder.is_dir():

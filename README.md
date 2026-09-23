@@ -22,6 +22,18 @@ Checkpoint phải được huấn luyện từ dữ liệu có đồng ý hoặc
 
 Không dùng giọng người thật khi chưa có sự đồng ý. Không mạo danh hoặc lừa đảo.
 
+## Đóng gói ứng dụng chạy Windows (.exe)
+
+Ứng dụng hỗ trợ đóng gói độc lập để chạy trên máy không cần cài đặt Python:
+
+1. Chạy file `build.bat` hoặc lệnh:
+   ```cmd
+   .venv\Scripts\pyinstaller.exe --noconfirm Tvoice.spec
+   ```
+2. Thư mục phát hành được tạo tại `dist\Tvoice-s\`.
+3. Chạy `dist\Tvoice-s\Tvoice-s.exe` để mở ứng dụng.
+4. Thư mục `dist\Tvoice-s\voices\` nằm cạnh file `.exe` cho phép người dùng thả trực tiếp model ONNX của mình vào mà không cần can thiệp mã nguồn.
+
 ## Kiểm thử
 
-Chạy `.venv\Scripts\python.exe test_engine.py`.
+Chạy `.venv\Scripts\python.exe test_engine.py` và `.venv\Scripts\python.exe test_worker_ai.py`.
